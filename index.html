@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+    <script src="https://cdn.rawgit.com/eligrey/FileSaver.js/5ed507ef8aa53d8ecfea96d96bc7214cd2476fd2/FileSaver.min.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Super-Resolution</h1>
+    <h4>저화질 이미지 고화질 변환</h4>
+    <script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <div class="file-upload">
+        <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">Add
+            Image</button>
+        <!-- 이미지 입력 박스 -->
+        <div class="image-upload-wrap">
+            <input class="file-upload-input" type='file' onchange="readURL(this);" accept="image/*" />
+            <div class="drag-text">
+                <h3>Drag and drop a file or select add Image</h3>
+            </div>
+        </div>
+
+        <!-- input image 출력 화면 -->
+        <div class="file-upload-content">
+            <canvas id="inputcanvas" width="300" height="300"></canvas>
+            <div class="image-title-wrap">
+                <div><button type="button" class="res-image" id="btnSR">변환 <span class="image-title">Uploaded
+                            Image</span></button></div>
+                <br>
+                <div><button type="button" class="remove-image" onclick="removeUpload()">Remove <span class="image-title">Uploaded
+                            Image</span></button></div>
+            </div>
+        </div>
+
+        <!-- 결과 출력 화면 -->
+        <div class="output-content">
+            <div>
+                <div>
+                    <p>이미지 복원이 완료되면 자동으로 다운로드됩니다.</p>
+                </div>
+                <div>
+                    <canvas id="resultcanvas" width="300" height="300"></canvas>
+                </div>
+            </div>
+            <div><button type="button" onclick="restart()" class="remove-image">초기화 </button></div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        var w = window.width;
+        $(".file-upload").width = w-60;
+        function readURL(input) {
+            if (input.files && input.files[0]) {
+
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('.image-upload-wrap').hide();
+
+                    var canvas = document.getElementById("inputcanvas");
+                    var context = canvas.getContext("2d");
+                    var img = new Image();
+                    img.src = e.target.result
+                    img.onload = function() {
+                        const w = this.width;
+                        const h = this.height;
+                        context.drawImage(img, 0, 0, w, h, 0, 0, 300, 300);
+                        var imgData = context.getImageData(0, 0, 300, 300).data;
+                        window.dataImage = [];
+                        for(var i=0; i<300; i++) {
+                            var d = [];
+                            for(var j=0; j<300; j++) {
+                                const idx = i*1200 + j*4;
+                                d.push([imgData[idx]/255, imgData[idx+1]/255, imgData[idx+2]/255]);
+                            }
+                            window.dataImage.push(d);
+                        }
+                    }
+                    $('.file-upload-content').show();
+                    $('.file-upload-input').prop("value", "");
+
+                };
+
+                reader.readAsDataURL(input.files[0]);
+
+            } else {
+                removeUpload();
+            }
+        }
+
+        function removeUpload() {
+            $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+            $('.file-upload-content').hide();
+            $('.image-upload-wrap').show();
+        }
+
+        function restart() {
+            $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+            $('.output-content').hide();
+            $('.image-upload-wrap').show();
+        }
+
+        $('.image-upload-wrap').bind('dragover', function () {
+            $('.image-upload-wrap').addClass('image-dropping');
+        });
+        $('.image-upload-wrap').bind('dragleave', function () {
+            $('.image-upload-wrap').removeClass('image-dropping');
+        });
+
+    </script>
+    <script type="module">
+        import {srStart} from './srlogic.js';
+        document.getElementById('btnSR').addEventListener('click', srStart)
+    </script>
+</body>
+<!-- Copyright (c) 2021 by Aaron Vanston (https://codepen.io/aaronvanston/pen/yNYOXR)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ -->
+
+</html>
