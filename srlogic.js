@@ -2,7 +2,11 @@ export async function srStart() {
     $('.file-upload-content').hide();
     $('.output-content').show();
 
-    const model = await tf.loadLayersModel("model.json");
+    const canvas = document.getElementById("resultcanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 300, 300);
+
+    const model = await tf.loadLayersModel("model/model.json");
 
     const t = tf.tensor4d([window.dataImage], [1, 300, 300, 3]);
 
@@ -33,41 +37,8 @@ export async function srStart() {
                 }
             }
             const img = new ImageData(res, 300);
-            const canvas = document.getElementById("resultcanvas");
-            const ctx = canvas.getContext("2d");
             ctx.putImageData(img, 0, 0);
-
-            const pflist = 'win16|win32|win64|mac|macintel';
-            canvas.toBlob(function(blob) {
-                saveAs(blob, makeFileName() + '.jpg');
-            }, 'image/jpeg');
-            
         }
     );
 
 }
-
-function makeFileName() {
-    let d = new Date();
-
-    let years = make2digitsString(d.getFullYear());
-    let months = make2digitsString(d.getMonth()+1);
-    let date = make2digitsString(d.getDate());
-
-    let hour = make2digitsString(d.getHours());
-    let minute = make2digitsString(d.getMinutes());
-    let sec = make2digitsString(d.getSeconds());
-
-    return "SR_" + years + months + date + hour +  minute + sec;
-}
-
-function make2digitsString(source) {
-    var dest = null;
-    if(source < 10) {
-        dest = "0" + source.toString();
-    } else {
-        dest = source.toString();
-    }
-    return dest;
-}
-
